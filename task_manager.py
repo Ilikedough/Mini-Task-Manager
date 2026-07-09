@@ -1,6 +1,7 @@
 from dataclasses import (dataclass,field)
 from enum import Enum
 import uuid
+import datetime
 
 
 class Progress(Enum):
@@ -21,6 +22,7 @@ class Task():
     owner: str
     progress: Progress = Progress.TODO
     priority: Priority = Priority.LOW
+    due_date: datetime.datetime = field(default_factory=datetime.datetime.today)
     id: uuid.UUID = field(default_factory=uuid.uuid4)
 
     def __str__(self) -> str:
@@ -29,7 +31,8 @@ class Task():
                 f"Name: {self.name}\n"
                 f"Owner: {self.owner}\n"
                 f"Progress: {self.progress.value}\n"
-                f"Priority: {self.priority.value}"
+                f"Priority: {self.priority.value}\n"
+                f"Due Date: {self.due_date}"
                 )
 
     def __eq__(self, value: object) -> bool:
@@ -46,10 +49,9 @@ class Task():
         if not isinstance(other, Task):
             return NotImplemented
 
-        values = {Priority.LOW:1,Priority.MEDIUM:2,Priority.HIGH:3}
+        priority = {Priority.LOW:1,Priority.MEDIUM:2,Priority.HIGH:3}
 
-        return values[self.priority] > values[other.priority]
-    
+        return (priority[self.priority],self.due_date) > (priority[other.priority],other.due_date)
 
 class TaskManager():
     def __init__(self) -> None:
@@ -81,7 +83,10 @@ class TaskManager():
         if "priority" in info and not isinstance(info["priority"], Priority):
             return False
         
-        properties = ("name","description","owner","progress","priority")
+        if "due_date" in info and not isinstance(info["due_date"], datetime.datetime):
+            return False
+        
+        properties = ("name","description","owner","progress","priority","due_date")
         for prop in properties:  
             if prop in info:
                 setattr(task,prop,info[prop])
@@ -94,14 +99,14 @@ class TaskManager():
         return None
     
     def filter(self,info):
-        properties = ("name","description","owner","progress","priority")
+        properties = ("name","description","owner","progress","priority","due_date")
         result = []
 
         for task in self.tasks:
             match = True
             for prop in properties:
                 if prop in info:
-                    if getattr(self,prop) != task[prop]:
+                    if getattr(task, prop) != info[prop]:
                         match = False
                         break
         
