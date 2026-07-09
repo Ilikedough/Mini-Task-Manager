@@ -86,4 +86,27 @@ class TaskManager():
             if prop in info:
                 setattr(task,prop,info[prop])
         return True
+    
+    def search(self,id):
+        for task in self.tasks:
+            if task.id == id:
+                return task
+        return None
+    
+    def filter(self,info):
+        properties = ("name","description","owner","progress","priority")
+        result = []
+
+        for task in self.tasks:
+            match = True
+            for prop in properties:
+                if prop in info:
+                    if getattr(self,prop) != task[prop]:
+                        match = False
+                        break
         
+                        
+            if match:
+                result.append(task)
+        
+        return result
