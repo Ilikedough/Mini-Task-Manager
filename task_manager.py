@@ -85,6 +85,9 @@ class TaskManager():
             self.logger.warning(f"Task is of invalid type {type(task).__name__}")
             return False
         
+        if not info:
+            self.logger.info(f"No changes requested for task {task.id}")
+        
         if "progress" in info and not isinstance(info["progress"], Progress):
             self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for progress")
             return False
@@ -97,7 +100,19 @@ class TaskManager():
             self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for due_date")
             return False
         
+        if task not in self.tasks:
+            self.logger.warning(f"Attempted to edit unmanaged task (id={task.id})")
+            return False
+
+        
+        
         properties = ("name","description","owner","progress","priority","due_date")
+
+        invalid = set(info) - set(properties)
+
+        if invalid:
+            self.logger.warning(f"Ignoring unknown fields: {invalid}")
+            
         for prop in properties:  
             if prop in info:
                 setattr(task,prop,info[prop])
@@ -113,7 +128,13 @@ class TaskManager():
         return None
     
     def filter(self,info):
+        if not info:
+            self.logger.info("Empty filter supplied; returning all tasks")
         properties = ("name","description","owner","progress","priority","due_date")
+        invalid = set(info) - set(properties)
+
+        if invalid:
+            self.logger.warning(f"Ignoring unknown filter fields: {invalid}")
         result = []
 
         for task in self.tasks:
