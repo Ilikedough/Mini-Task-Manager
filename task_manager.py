@@ -93,11 +93,11 @@ class TaskManager():
             return False
 
         if "priority" in info and not isinstance(info["priority"], Priority):
-            self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for priority")
+            self.logger.warning(f"{type(info['priority']).__name__} is an invalid type for priority")
             return False
         
         if "due_date" in info and not isinstance(info["due_date"], datetime.datetime):
-            self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for due_date")
+            self.logger.warning(f"{type(info['due_date']).__name__} is an invalid type for due_date")
             return False
         
         if task not in self.tasks:
