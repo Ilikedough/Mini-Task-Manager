@@ -2,7 +2,7 @@ from dataclasses import (dataclass,field)
 from enum import Enum
 import uuid
 import datetime
-
+import logger
 
 class Progress(Enum):
     TODO = "TODO"
@@ -56,46 +56,60 @@ class Task():
 class TaskManager():
     def __init__(self) -> None:
         self.tasks = []
+        self.logger = logger.setup_logger("TMlog","TM.log")
     
     def add(self,task) -> bool:
         if isinstance(task,Task):
             if task in self.tasks:
+                self.logger.warning(f"Attempted adding duplicate task with id: {task.id}")
                 return False
             self.tasks.append(task)
+            self.logger.info(f"Task added successfully (id={task.id}, name='{task.name}')")
             return True
+        self.logger.warning(f"Task is of invalid type {type(task).__name__}")
         return False
     
     def delete(self,task) -> bool:
         if isinstance(task,Task):
             if task in self.tasks:
                 self.tasks.remove(task)
+                self.logger.info(f"Task deleted successfully (id={task.id}, name='{task.name}')")
                 return True
+            self.logger.warning(f"Task with id: {task.id} is not in the tasks")
             return False
+        self.logger.warning(f"Task is of invalid type {type(task).__name__}")
         return False
 
     def edit(self,task,info) -> bool:
         if not isinstance(task,Task):
+            self.logger.warning(f"Task is of invalid type {type(task).__name__}")
             return False
         
         if "progress" in info and not isinstance(info["progress"], Progress):
+            self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for progress")
             return False
 
         if "priority" in info and not isinstance(info["priority"], Priority):
+            self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for priority")
             return False
         
         if "due_date" in info and not isinstance(info["due_date"], datetime.datetime):
+            self.logger.warning(f"{type(info['progress']).__name__} is an invalid type for due_date")
             return False
         
         properties = ("name","description","owner","progress","priority","due_date")
         for prop in properties:  
             if prop in info:
                 setattr(task,prop,info[prop])
+        self.logger.info(f"Task updated successfully (id={task.id}, fields={list(info.keys())})")
         return True
     
     def search(self,id):
         for task in self.tasks:
             if task.id == id:
+                self.logger.info(f"Task found (id={id})")
                 return task
+        self.logger.warning(f"Id: {id} was not found")
         return None
     
     def filter(self,info):
@@ -113,5 +127,5 @@ class TaskManager():
                         
             if match:
                 result.append(task)
-        
+        self.logger.info(f"Filter completed successfully. {len(result)} task(s) matched.")
         return result
