@@ -12,7 +12,7 @@ def setup_logger(name, filename = "log.log"):
     console_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
 
-    console_handler.setLevel(logging.ERROR)
+    console_handler.setLevel(logging.WARNING)
     file_handler.setLevel(logging.INFO)
 
     logger = logging.getLogger(name)
